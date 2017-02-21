@@ -1,35 +1,46 @@
 # coding:utf-8
 "twiter文本"
+import fileinput
+import time
 
 data_keys = ('bid', 'uid', 'username', 'v_class', 'content', 'img', 'created_at', 'source', 'rt_num', 'cm_num', 'rt_uid', 'rt_username', 'rt_v_class', 'rt_content', 'rt_img', 'src_rt_num', 'src_cm_num', 'gender', 'rt_bid', 'location', 'rt_mid', 'mid', 'lat', 'lon', 'lbs_type', 'lbs_title', 'poiid', 'links', 'hashtags', 'ats', 'rt_links', 'rt_hashtags', 'rt_ats', 'v_url', 'rt_v_url')
 
+keylist = dict(zip(data_keys, range(len(data_keys))))
+print keylist
 # 打开文件
 filename = r"E:\BaiduYunDownload\twitter.txt"
-readfile = open(filename)
-userlist = []
-while True:
-    line = readfile.readline()
-    userlist.append(line)
+file = []
+for line in fileinput.input(filename):
     if not line:
         break
+    file.append(line)
 
-readdict = [dict(zip(data_keys, users.split(','))) for users in userlist]
-print readdict[0]
+userlist = [x[1:-1].split("\",\"")for x in file] #中间要去掉的是","的格式，且两边的"去不掉
+
 # 1.该文本里，有多少个用户。（要求：输出为一个整数。）
-length = len(userlist)
+username = []
+for a in userlist:
+    username.append(a[keylist["username"]])
+usernameset = set(username)
+length = len(usernameset)
 print length
-#
+
 # # 2.该文本里，每一个用户的名字。 （要求：输出为一个list。）
-# #
-username = set()
-for x in range(length):
-    username.add(readdict[x]['username'])
-print username[3:34]
+print [unicode(x,"utf-8") for x in usernameset][0:2]
 # 3.该文本里，有多少个2012年11月发布的tweets。 （要求：输出为一个整数。提示：请阅读python的time模块）
 #
+created_time = [x[keylist["created_at"]] for x in userlist]
+times = [time.strptime(x, "%Y-%m-%d %H:%M:%S") for x in created_time]
+print times[0:2]
+howmany201211 = 0
+for x in xrange(len(times)):
+    if times[x].tm_year == 2012 and times[x].tm_mon == 11:
+        howmany201211 += 1
 
+print howmany201211
 # 4.该文本里，有哪几天的数据？ （要求：输出为一个list，例：['2012-03-04','2012-03-05']）
 #
+
 # 5.该文本里，在哪个小时发布的数据最多？ （要求：输出一个整数。）
 #
 # 6.该文本里，输出在每一天发表tweets最多的用户。（要求：输出一个字典。例如 {'2012-03-04':'agelin','2012-03-5':'twa'}）
@@ -52,5 +63,3 @@ print username[3:34]
 #
 # 15. 该文本里，哪个用户的源微博URL次数最多。 （要求：输出用户的uid，字符串格式。）
 
-
-readfile.close()
