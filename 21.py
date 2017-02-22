@@ -2,12 +2,13 @@
 "twiter文本"
 import fileinput
 import time
-
+now = time.time() #代码开始时间
 data_keys = (
-'bid', 'uid', 'username', 'v_class', 'content', 'img', 'created_at', 'source', 'rt_num', 'cm_num', 'rt_uid',
-'rt_username', 'rt_v_class', 'rt_content', 'rt_img', 'src_rt_num', 'src_cm_num', 'gender', 'rt_bid', 'location',
-'rt_mid', 'mid', 'lat', 'lon', 'lbs_type', 'lbs_title', 'poiid', 'links', 'hashtags', 'ats', 'rt_links', 'rt_hashtags',
-'rt_ats', 'v_url', 'rt_v_url')
+    'bid', 'uid', 'username', 'v_class', 'content', 'img', 'created_at', 'source', 'rt_num', 'cm_num', 'rt_uid',
+    'rt_username', 'rt_v_class', 'rt_content', 'rt_img', 'src_rt_num', 'src_cm_num', 'gender', 'rt_bid', 'location',
+    'rt_mid', 'mid', 'lat', 'lon', 'lbs_type', 'lbs_title', 'poiid', 'links', 'hashtags', 'ats', 'rt_links',
+    'rt_hashtags',
+    'rt_ats', 'v_url', 'rt_v_url')
 
 keylist = dict(zip(data_keys, range(len(data_keys))))
 print keylist
@@ -23,8 +24,9 @@ userlist = [x[1:-1].split("\",\"") for x in file]  # 中间要去掉的是","的
 
 # 1.该文本里，有多少个用户。（要求：输出为一个整数。）
 username = []
+usernameunmber = keylist["username"]
 for a in userlist:
-    username.append(a[keylist["username"]])
+    username.append(a[usernameunmber])
 usernameset = set(username)
 username = list(usernameset)
 length = len(usernameset)
@@ -34,21 +36,22 @@ print length
 print [unicode(x, "utf-8") for x in usernameset][0:2]
 # 3.该文本里，有多少个2012年11月发布的tweets。 （要求：输出为一个整数。提示：请阅读python的time模块）
 #
-created_time = [x[keylist["created_at"]] for x in userlist]  #取出format形式的时间
-times = [time.strptime(x, "%Y-%m-%d %H:%M:%S") for x in created_time]   #产生time.struct_time列表
+number_created = keylist["created_at"]
+created_time = [x[number_created] for x in userlist]  # 取出format形式的时间
+times = [time.strptime(x, "%Y-%m-%d %H:%M:%S") for x in created_time]  # 产生time.struct_time列表
 howmany201211 = 0
 for x in xrange(len(times)):
     if times[x].tm_year == 2012 and times[x].tm_mon == 11:
         howmany201211 += 1
 
-print howmany201211
+#print howmany201211
 # 4.该文本里，有哪几天的数据？ （要求：输出为一个list，例：['2012-03-04','2012-03-05']）
 #
 dates_list = []
 for dates in times:
     dates_list.append(time.strftime("%Y-%m-%d", dates))
 dates_list = list(set(dates_list))
-print dates_list[0:2]
+#print dates_list[0:2]
 # 5.该文本里，在哪个小时发布的数据最多？ （要求：输出一个整数。）
 #
 hours_count = [0] * 24  # 是24小时制开始只给了13个空
@@ -57,7 +60,7 @@ for hour in times:
     x = int(time.strftime("%H", hour))
     hours_count[x] += 1
 
-print hours_count.index(max(hours_count))
+#print hours_count.index(max(hours_count))
 
 
 # 6.该文本里，输出在每一天发表tweets最多的用户。（要求：输出一个字典。例如 {'2012-03-04':'agelin','2012-03-5':'twa'}）
@@ -65,23 +68,23 @@ print hours_count.index(max(hours_count))
 def which_is_most_today(date):
     counttimes = [0] * length
     for a in userlist:
-        if a[keylist["created_at"]] == date:
-            counttimes[username.index(a[keylist["username"]])] += 1
+        if a[number_created] == date:
+            counttimes[username.index(a[usernameunmber])] += 1
     maxuser = max(counttimes)
     return (date, username[maxuser])
 
 
 usermost = [which_is_most_today(date) for date in dates_list]
-#print usermost
+# print usermost
 
 # 7. 请按照时间顺序输出 2012-11-03 每个小时的发布tweets的频率（要求：输出为一个list [(1,20),(2,30)] 代表1点发了20个tweets，2点发了30个tweets）
 #
 
 list2 = [[x, 0] for x in xrange(0, 24)]
 for date in times:
-    if time.strftime("%Y-%m-%d", date) == "2012-11-03":  #strptime与strftime的区别注意 strptime将time.struct_time变为字符串
-        list2[int(time.strftime("%H", date))][1] += 1    #且不能落下任何一部分（即日期-时间只取日期是不行的
-    else:                                               #而strftime则将time.struct_time变成format并可以舍弃不需要的数据
+    if time.strftime("%Y-%m-%d", date) == "2012-11-03":  # strptime与strftime的区别注意 strptime将time.struct_time变为字符串
+        list2[int(time.strftime("%H", date))][1] += 1  # 且不能落下任何一部分（即日期-时间只取日期是不行的
+    else:  # 而strftime则将time.struct_time变成format并可以舍弃不需要的数据
         pass
 print [tuple(x) for x in list2]
 # 8. 统计该文本里，来源的相关信息和次数，比如（输出一个list。例如[('Twitter for Android',1),('TweetList!',1)]）
@@ -95,12 +98,12 @@ for x in userlist:
         sourcedict.setdefault(x[number], 1)
 
 # 9. 计算转发URL中：以："https://twitter.com/umiushi_no_uta"开头的有几个。(要求，输出一个整数。)
-#rt_v_url
+# rt_v_url
 number = keylist["rt_v_url"]
 counturl = 0
 for x in userlist:
-    if x[number].find("https://twitter.com/umiushi_no_uta") != -1: #注意find找不时是返回-1而不是0，所以if str.find将是
-        counturl += 1                                              #永远成立的
+    if x[number].find("https://twitter.com/umiushi_no_uta") != -1:  # 注意find找不时是返回-1而不是0，所以if str.find将是
+        counturl += 1  # 永远成立的
 print counturl
 # 10. UID为573638104的用户 发了多少个微博 （要求：输出一个整数）
 #
@@ -111,6 +114,8 @@ for x in userlist:
         counttwi += 1
 
 print counttwi
+
+
 # 11. 定义一个函数，该函数可放入任意多的用户uid参数（如果不存在则返回null），函数返回发微薄数最多的用户uid。
 #
 def uid(*a):
@@ -130,12 +135,45 @@ def uid(*a):
                 pass
         return a[list1.index(max(list1))]
 
-print uid("34133","767078227")    #return的内容要print才会打印出来（
+
+print uid("34133", "767078227")  # return的内容要print才会打印出来（
 # 12. 该文本里，谁发的微博内容长度最长 （要求：输出用户的uid，字符串格式。）
 #
-
+number_content = keylist["content"]
+number_uid = keylist["uid"]
+a = [len(user[number_content]) for user in userlist]
+print userlist[a.index(max(a))][number_uid]
 # 13. 该文本里，谁转发的URL最多 （要求：输出用户的uid，字符串格式。）
 #
+number_rt_v_url = keylist["rt_v_url"]
+number_rt_uid = keylist["rt_uid"]
+rturlmuch = {}
+for x in userlist:
+    if x[number_rt_uid] in rturlmuch.keys():
+        rturlmuch[x[number_rt_uid]] += 1
+    else:
+        if x[number_rt_uid] != "":
+            rturlmuch.setdefault(x[number_rt_uid], 1)
+        else:
+            pass
+rtu = rturlmuch.items()
+print rtu[0:2]
+rtu.sort(key=lambda xa: xa[1], reverse=True)
+print rtu[0][0]
 # 14. 该文本里，11点钟，谁发的微博次数最多。 （要求：输出用户的uid，字符串格式。）
 #
+uid11 = {}
+for xa in xrange(len(times)):
+    if 11 == times[xa].tm_hour:
+        if userlist[xa][1] in uid11.keys():
+            uid11[userlist[xa][1]] += 1
+        else:
+            uid11.setdefault(userlist[xa][1], 1)
+    else:
+        pass
+
+a = sorted(uid11.items(),key=lambda xb:xb[1],reverse=True) #没能正确理解sorted为函数（以为是list方法
+print a[0][0]
 # 15. 该文本里，哪个用户的源微博URL次数最多。 （要求：输出用户的uid，字符串格式。）
+
+print u'运算时间：%s'%(time.time() - now) #整体运行时间
